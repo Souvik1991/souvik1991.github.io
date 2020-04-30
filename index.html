@@ -1,1 +1,166 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet"><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script><style>body{margin: 0;background: #000000;position: relative;height: 100vh;font-family: 'Roboto', sans-serif;font-weight: 500;font-size: 13px;line-height: 1}.hide{display: none;}.flex-cont{display: flex;flex-direction: row;justify-content: center;}.flex-cont.full-height{height: 100%;}.flex-cont.column{flex-direction: column;}.flex-cont.space-around{justify-content: space-around;}.loader, .player{width: 100%;background-repeat: no-repeat;background-size: cover;background-position: 50%;position: relative;color: #fff;}.loader .loader-gradient{background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,.8) 40%, rgba(0,0,0,.8) 60%, rgba(0,0,0,0.304359243697479) 100%);position: absolute;top: 0;left: 0;right: 0;bottom: 0}.loader .heading{text-align: center;font-size: 20px;letter-spacing: 1px;padding-bottom: 15px}.loader .detail-box{background: rgba(0, 0, 0, 0.6);border-radius: 10px;padding: 15px 20px;width: 300px;margin-left: auto;margin-right: auto;}.loader .detail-box .loading-text{font-size: 14px;text-align: center;}.loader .detail-box .progress-bar{height: 5px;background-color: rgba(255, 255, 255, 0.5);border-radius: 10px;margin: 10px 0;position: relative;}.loader .detail-box .progress-bar span{position: absolute;top: 0;left: 0;bottom: 0;background-color: #fff;border-radius: 10px;}</style></head><body><div id="loader" class="loader flex-cont column full-height"><div class="loader-gradient"><div class="flex-cont column full-height"><div class="heading">Sintel</div><div class="detail-box"><div class="loading-text">Loading...</div><div class="progress-bar"><span style="width:10%"></span></div><div class="flex-cont space-around"><div class="flexbox">Download: 500kb</div><div class="flexbox">Upload: 100kb</div><div class="flexbox">Peer: 5</div></div></div></div></div></div><div id="player-container" class="player hide"></div><script type="text/javascript">(function(){var getQueryVar=(varName)=>{var queryStr=unescape(window.location.search) +'&',regex=new RegExp('.*?[&\\?]'+ varName +'=(.*?)&.*'),val=queryStr.replace(regex, "$1");return val===queryStr ? false : val;},onTorrent=(torrent)=>{console.log(torrent.name);torrent.on('metadata', function (){console.log(1);})torrent.on('ready', ()=>{console.log(2);})},tid=getQueryVar('tid'),poster=getQueryVar('poster'),loader=document.getElementById('loader'),container=document.getElementById('player-container');if(poster){loader.style.backgroundImage=`url(${poster})`;}if(tid){var client=new WebTorrent(),trackers=['udp://explodie.org:6969','udp://tracker.empire-js.us:1337','wss://tracker.btorrent.xyz','wss://tracker.openwebtorrent.com','udp://glotorrents.pw:6969/announce','udp://tracker.opentrackr.org:1337/announce','udp://torrent.gresille.org:80/announce','udp://tracker.openbittorrent.com:80','udp://tracker.coppersurfer.tk:6969','udp://tracker.leechers-paradise.org:6969','udp://p4p.arenabg.ch:1337','udp://tracker.internetwarriors.net:1337','udp://open.demonii.com:1337/announce'],magnetLink=`magnet:?xt=urn:btih:${tid}&tr=${trackers.join('&tr=')}&ws=https://webtorrent.io/torrents/`;}else alert('Torrent id is not passed.')})();</script></body></html>
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
+		<style>
+			body{
+				margin: 0;
+				background: #000000;
+				position: relative;
+				height: 100vh;
+				font-family: 'Roboto', sans-serif;
+				font-weight: 500;
+				font-size: 13px;
+				line-height: 1
+			}
+			.hide{
+				display: none;
+			}
+			.flex-cont{
+				display: flex;
+				flex-direction: row;
+				justify-content: center;
+			}
+			.flex-cont.full-height{
+				height: 100%;
+			}
+			.flex-cont.column{
+				flex-direction: column;
+			}
+			.flex-cont.space-around{
+				justify-content: space-around;
+			}
+			.loader, .player{
+				width: 100%;
+				background-repeat: no-repeat;
+				background-size: cover;
+				background-position: 50%;
+				position: relative;
+				color: #fff;
+			}
+			.loader .loader-gradient{
+				background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,.8) 40%, rgba(0,0,0,.8) 60%, rgba(0,0,0,0.304359243697479) 100%);
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0
+			}
+			.loader .heading{
+				text-align: center;
+				font-size: 20px;
+				letter-spacing: 1px;
+				padding-bottom: 15px
+			}
+			.loader .detail-box{
+				background: rgba(0, 0, 0, 0.6);
+				border-radius: 10px;
+				padding: 15px 20px;
+				width: 300px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			.loader .detail-box .loading-text{
+				font-size: 14px;
+				text-align: center;
+			}
+			.loader .detail-box .progress-bar{
+				height: 5px;
+				background-color: rgba(255, 255, 255, 0.5);
+				border-radius: 10px;
+				margin: 10px 0;
+				position: relative;
+			}
+			.loader .detail-box .progress-bar span{
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				background-color: #fff;
+				border-radius: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="loader" class="loader flex-cont column full-height">
+			<div class="loader-gradient">
+				<div class="flex-cont column full-height">
+					<div class="heading">Sintel</div>
+					<div class="detail-box">
+						<div class="loading-text">Loading...</div>
+						<div class="progress-bar">
+							<span style="width:10%"></span>
+						</div>
+						<div class="flex-cont space-around">
+							<div class="flexbox">
+								Download: 500kb
+							</div>
+							<div class="flexbox">
+								Upload: 100kb
+							</div>
+							<div class="flexbox">
+								Peer: 5
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="player-container" class="player hide">
+
+		</div>
+		<script type="text/javascript">
+			(function(){
+				var getQueryVar = (varName) => {
+					var queryStr = unescape(window.location.search) +'&',
+						regex = new RegExp('.*?[&\\?]'+ varName +'=(.*?)&.*'),
+						val = queryStr.replace(regex, "$1");
+					return val === queryStr ? false : val;
+				},
+				onTorrent = (torrent) => {
+					console.log(torrent.name);
+					torrent.on('metadata', function () {
+						console.log(1);
+					})
+					torrent.on('ready', () => {
+						console.log(2);
+					})
+				},
+				tid = getQueryVar('tid'),
+				poster = getQueryVar('poster'),
+				loader = document.getElementById('loader'),
+				container = document.getElementById('player-container');
+
+				if(poster){
+					console.log(poster)
+					loader.style.backgroundImage = `url(${poster})`;
+				}
+
+				if(tid){
+					var client = new WebTorrent(),
+					trackers = [
+						'udp://explodie.org:6969',
+						'udp://tracker.empire-js.us:1337',
+						'wss://tracker.btorrent.xyz',
+						'wss://tracker.openwebtorrent.com',
+						'udp://glotorrents.pw:6969/announce',
+						'udp://tracker.opentrackr.org:1337/announce',
+						'udp://torrent.gresille.org:80/announce',
+						'udp://tracker.openbittorrent.com:80',
+						'udp://tracker.coppersurfer.tk:6969',
+						'udp://tracker.leechers-paradise.org:6969',
+						'udp://p4p.arenabg.ch:1337',
+						'udp://tracker.internetwarriors.net:1337',
+						'udp://open.demonii.com:1337/announce'
+					],
+					magnetLink = `magnet:?xt=urn:btih:${tid}&tr=${trackers.join('&tr=')}&ws=https://webtorrent.io/torrents/`;
+
+					// client.add(magnetLink, onTorrent);
+				}
+				else alert('Torrent id is not passed.')
+			})();
+		</script>
+	</body>
+</html>
