@@ -167,7 +167,7 @@ self.addEventListener('message', (event) => {
 			else if(event.data.cmd === 'SYNC'){
 				// Looping throug all the data and pushing it to the queue
 				event.data.data.forEach((url) => {
-					QUEUE_OBJECT.Queue = fixUrl(url);
+					QUEUE_OBJECT.Queue = url;
 				});
 			}
 		}
