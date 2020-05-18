@@ -54,9 +54,6 @@
                     // Binding the event to state change
                     serviceWorker.addEventListener('statechange', (e) => {
                         console.log('Log: Service worker state changed to', e.target.state);
-                        console.log(reg);
-                        console.log(serviceWorker);
-                        console.log(e);
                         // Checking the current state is activated or not
                         if(e.target.state === 'activated'){
                             currentServiceWorker = reg.active;
@@ -91,6 +88,7 @@
             if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
         });
         bindEvent(document.getElementById('close'), 'click', () => {
+            console.log(currentServiceWorker);
             if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
         });
 

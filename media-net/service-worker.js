@@ -3,6 +3,7 @@ _this = self,
 QUEUE_OBJECT = {
 	queue: [],
 	networkCall: false,
+	stId: undefined,
 	callee(){
 		if(!this.networkCall){
 			// Check the browser is online or offline
@@ -29,9 +30,11 @@ QUEUE_OBJECT = {
 				})
 			}
 			else{
+				if(this.stId !== undefined) return; 
 				console.log('Log: Browser is offline.');
-				setTimeout(() => {
+				this.stId = setTimeout(() => {
 					console.log('Log: timeout done, calling again.');
+					this.stId = undefined;
 					this.callee();
 				}, 2000);
 			}
@@ -131,12 +134,15 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('message', (event) => {
+	console.log(event);
 	event.waitUntil(async function() {
+		console.log(1);
 		// Exit early if we don't have access to the client.
     	// Eg, if it's cross-origin.
 		if(!event.clientId) return;
-
+		console.log(2);
 		if(event && event.data){
+			console.log(event);
 			if(event.data.cmd === 'UNLOAD'){
 				var queue = QUEUE_OBJECT.Queue;
 				if(queue.length > 0) {
