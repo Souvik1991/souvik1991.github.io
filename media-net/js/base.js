@@ -84,13 +84,13 @@
         // Binding the before unload event with the window
         // Before the tab close it will check if there any remaining click events in the queue
         // and the worker will return them to store in local storage
-        bindEvent(window, 'beforeunload', () => {
-            if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
-        });
-        bindEvent(document.getElementById('close'), 'click', () => {
-            console.log(currentServiceWorker);
-            if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
-        });
+        // bindEvent(window, 'beforeunload', () => {
+        //     if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
+        // });
+        // bindEvent(document.getElementById('close'), 'click', () => {
+        //     console.log(currentServiceWorker);
+        //     if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
+        // });
 
         // This functions will trigger pixel code with different parameter
         bindEvent(document.getElementById('div'), 'click', () => {

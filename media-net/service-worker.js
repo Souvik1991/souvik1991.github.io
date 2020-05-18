@@ -134,39 +134,34 @@ self.addEventListener('fetch', (event) => {
 	}());
 });
 
-self.addEventListener('message', (event) => {
-	console.log(event);
-	event.waitUntil(async function() {
-		console.log(1);
-		// Exit early if we don't have access to the client.
-    	// Eg, if it's cross-origin.
-		if(!event.clientId) return;
-		console.log(2);
-		if(event && event.data){
-			console.log(event);
-			if(event.data.cmd === 'UNLOAD'){
-				var queue = QUEUE_OBJECT.Queue;
-				if(queue.length > 0) {
-					// Get the client.
-					const client = await clients.get(event.clientId);
-					// Exit early if we don't get the client.
-					// Eg, if it closed.
-					if(!client) return;
+// self.addEventListener('message', (event) => {
+// 	event.waitUntil(async function() {
+// 		console.log(1);
+// 		if(event && event.data){
+// 			console.log(event);
+// 			if(event.data.cmd === 'UNLOAD'){
+// 				var queue = QUEUE_OBJECT.Queue;
+// 				if(queue.length > 0) {
+// 					// Get the client.
+// 					const client = await clients.get(event.clientId);
+// 					// Exit early if we don't get the client.
+// 					// Eg, if it closed.
+// 					if(!client) return;
 
-					// Sending the pending queue to frontend so that it can be saved in localstorage
-					// Later on we can use it once the user revisit the site
-					client.postMessage({
-						cmd: "STORE",
-						data: queue
-					});
-				}
-			}
-			else if(event.data.cmd === 'SYNC'){
-				// Looping throug all the data and pushing it to the queue
-				event.data.data.forEach((url) => {
-					QUEUE_OBJECT.Queue = fixUrl(url);
-				});
-			}
-		}
-	}());
-});
+// 					// Sending the pending queue to frontend so that it can be saved in localstorage
+// 					// Later on we can use it once the user revisit the site
+// 					client.postMessage({
+// 						cmd: "STORE",
+// 						data: queue
+// 					});
+// 				}
+// 			}
+// 			else if(event.data.cmd === 'SYNC'){
+// 				// Looping throug all the data and pushing it to the queue
+// 				event.data.data.forEach((url) => {
+// 					QUEUE_OBJECT.Queue = fixUrl(url);
+// 				});
+// 			}
+// 		}
+// 	}());
+// });
