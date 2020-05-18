@@ -9,35 +9,40 @@ QUEUE_OBJECT = {
 			// Check the browser is online or offline
 			// If offline wait for 5s before making the call again
 			if(navigator.onLine){
-				this.networkCall = true;
-				let url = this.queue.pop(0);
-				fetch(url)
-				.then((res) => {
-					this.networkCall = false;
-					console.log(res.ok);
-					if(!res.ok){
-						this.queue.unshift(url);
-						this.callee();
+				if(this.queue.length > 0){
+					this.networkCall = true;
+					let url = this.queue.pop(0);
+					if(url){
+						fetch(url)
+						.then((res) => {
+							this.networkCall = false;
+							console.log(res.ok);
+							if(!res.ok){
+								this.queue.unshift(url);
+								this.callee();
+							}
+							else if(this.queue.length > 0) this.callee();
+						})
+						.catch((err) => {
+							// If the network error happen or for some reason not able to make the call
+							// Set the variable value so it will get pushed in the queue at the beginning
+							console.log('Log: Something went wrong.', err);
+							this.networkCall = false;
+							this.queue.unshift(url);
+							this.callee();	
+						})
 					}
-					else if(this.queue.length > 0) this.callee();
-				})
-				.catch((err) => {
-					// If the network error happen or for some reason not able to make the call
-					// Set the variable value so it will get pushed in the queue at the beginning
-					console.log('Log: Something went wrong.', err);
-					this.networkCall = false;
-					this.queue.unshift(url);
-					this.callee();	
-				})
+				}
 			}
 			else{
 				if(this.stId !== undefined) return; 
 				console.log('Log: Browser is offline.');
-				this.stId = setTimeout(() => {
-					console.log('Log: timeout done, calling again.');
-					this.stId = undefined;
-					this.callee();
-				}, 5000);
+				if(this.queue.length > 0)
+					this.stId = setTimeout(() => {
+						console.log('Log: timeout done, calling again.');
+						this.stId = undefined;
+						this.callee();
+					}, 5000);
 			}
 		}
 	},
@@ -147,13 +152,16 @@ self.addEventListener('message', (event) => {
 					// Exit early if we don't get the client.
 					// Eg, if it closed.
 					if(!client) return;
-
+					
 					// Sending the pending queue to frontend so that it can be saved in localstorage
 					// Later on we can use it once the user revisit the site
 					client.postMessage({
 						cmd: "STORE",
 						data: queue
 					});
+
+					// Emptying the queue so the timeout get stopped
+					QUEUE_OBJECT.queue = [];
 				}
 			}
 			else if(event.data.cmd === 'SYNC'){

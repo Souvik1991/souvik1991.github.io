@@ -6,13 +6,15 @@
 	},
     syncData = () => {
         var mdata = localStorage.getItem(localKey); // Fetching all unsynced data
-        if(mdata && Array.isArray(mdata) && mdata.length > 0 && currentServiceWorker){
+        if(mdata && currentServiceWorker){
             mdata = JSON.parse(mdata);
-            currentServiceWorker.postMessage({
-                cmd: 'SYNC', 
-                data: mdata
-            });
-            localStorage.removeItem(localKey);
+            if(Array.isArray(mdata) && mdata.length > 0){
+                currentServiceWorker.postMessage({
+                    cmd: 'SYNC', 
+                    data: mdata
+                });
+                localStorage.removeItem(localKey);
+            }
         }
     };
 
