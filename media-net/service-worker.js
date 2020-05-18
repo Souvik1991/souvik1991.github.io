@@ -1,5 +1,5 @@
 let version = 'v1',
-_this = self,
+clientId = undefined,
 QUEUE_OBJECT = {
 	queue: [],
 	networkCall: false,
@@ -99,6 +99,7 @@ self.addEventListener('fetch', (event) => {
 	if(event.request.method !== 'GET') return;
 	console.log('Log: fetch event in progress.', event);
 
+	if(!clientId && event.clientId) clientId = event.clientId;
 	// Parsing the request url
 	var url = new URL(event.request.url);
 	event.respondWith(async function() {
@@ -134,34 +135,33 @@ self.addEventListener('fetch', (event) => {
 	}());
 });
 
-// self.addEventListener('message', (event) => {
-// 	event.waitUntil(async function() {
-// 		console.log(1);
-// 		if(event && event.data){
-// 			console.log(event);
-// 			if(event.data.cmd === 'UNLOAD'){
-// 				var queue = QUEUE_OBJECT.Queue;
-// 				if(queue.length > 0) {
-// 					// Get the client.
-// 					const client = await clients.get(event.clientId);
-// 					// Exit early if we don't get the client.
-// 					// Eg, if it closed.
-// 					if(!client) return;
+self.addEventListener('message', (event) => {
+	event.waitUntil(async function() {
+		if(event && event.data){
+			if(event.data.cmd === 'UNLOAD'){
+				var queue = QUEUE_OBJECT.Queue;
+				if(queue.length > 0) {
+					console.log(clientId);
+					// Get the client.
+					const client = await clients.get(event.clientId || clientId);
+					// Exit early if we don't get the client.
+					// Eg, if it closed.
+					if(!client) return;
 
-// 					// Sending the pending queue to frontend so that it can be saved in localstorage
-// 					// Later on we can use it once the user revisit the site
-// 					client.postMessage({
-// 						cmd: "STORE",
-// 						data: queue
-// 					});
-// 				}
-// 			}
-// 			else if(event.data.cmd === 'SYNC'){
-// 				// Looping throug all the data and pushing it to the queue
-// 				event.data.data.forEach((url) => {
-// 					QUEUE_OBJECT.Queue = fixUrl(url);
-// 				});
-// 			}
-// 		}
-// 	}());
-// });
+					// Sending the pending queue to frontend so that it can be saved in localstorage
+					// Later on we can use it once the user revisit the site
+					client.postMessage({
+						cmd: "STORE",
+						data: queue
+					});
+				}
+			}
+			else if(event.data.cmd === 'SYNC'){
+				// Looping throug all the data and pushing it to the queue
+				event.data.data.forEach((url) => {
+					QUEUE_OBJECT.Queue = fixUrl(url);
+				});
+			}
+		}
+	}());
+});
