@@ -50,6 +50,13 @@
             navigator.serviceWorker.register('/media.net/js/service-worker.js', {scope: '/media.net/'})
             .then((reg) => {
                 console.log(`Log: Registration succeeded. Scope is ${reg.scope}`);
+                if(reg.installing) {
+                console.log('Service worker installing');
+                } else if(reg.waiting) {
+                console.log('Service worker installed');
+                } else if(reg.active) {
+                console.log('Service worker active');
+                }
             }, () => {
                 console.log('Log: service worker registration failure.');
             });
