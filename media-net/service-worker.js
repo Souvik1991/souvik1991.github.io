@@ -31,9 +31,9 @@ self.addEventListener('install', (event) => {
         .open(`${version}:pixel`)
         .then((cache) => {
             return cache.addAll([
-				'/media-net/', 
-				'/media-net/image/', 
-				'/media-net/image/pixel.gif'])
+				'/media-net/image/test.png',
+				'/media-net/image/pixel.gif'
+			])
         })
         .then(function() {
             console.log('WORKER: install completed');
@@ -41,21 +41,34 @@ self.addEventListener('install', (event) => {
     );
 });
 
-self.addEventListener('activate', (event) => {
-    const currentCaches = [`${version}:pixel`];
-    event.waitUntil(
-		caches.keys().then(cacheNames => {
-			return cacheNames.filter(cacheName => !currentCaches.includes(cacheName));
-		}).then(cachesToDelete => {
-			return Promise.all(cachesToDelete.map(cacheToDelete => {
-				return caches.delete(cacheToDelete);
-			}));
-		}).then(() => self.clients.claim())
-    );
-});
+// self.addEventListener('activate', (event) => {
+//     const currentCaches = [`${version}:pixel`];
+//     event.waitUntil(
+// 		caches.keys().then(cacheNames => {
+// 			return cacheNames.filter(cacheName => !currentCaches.includes(cacheName));
+// 		}).then(cachesToDelete => {
+// 			return Promise.all(cachesToDelete.map(cacheToDelete => {
+// 				return caches.delete(cacheToDelete);
+// 			}));
+// 		}).then(() => self.clients.claim())
+//     );
+// });
 
 self.addEventListener('fetch', (event) => {
 	console.log('WORKER: fetch event in progress.');
+	// event.respondWith(
+	// 	caches.match(event.request)
+	// 	.then(function(response) {
+	// 		var url = new URL(event.request.url);
+	// 		console.log(url);
+	// 		if(/pixel.gif$/.test(url.pathname)) {
+	// 			return fetch(parseUrl(url))
+	// 			.then((response) => {
+	// 				return response;
+	// 			})
+	// 		}
+	// 	})
+	// );
 	event.respondWith(async function(){
 		var url = new URL(event.request.url);
 		console.log(url);
