@@ -57,51 +57,59 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-	console.log(event.request.method);
+	// Checking the request method is GET or not
+	// If not get request return
 	if(event.request.method !== 'GET') return;
-
 	console.log('WORKER: fetch event in progress.');
+
+	// Parsing the request url
 	var url = new URL(event.request.url);
-	event.respondWith(
-		caches.match(event.request)
-		.then((response) => {
-			console.log(response);
-			if(/pixel.gif$/.test(url.pathname)) {
-				// caches.match() always resolves
-				// but in case of success response will have value
-				if (response !== undefined){
-					// Calling the backend immediately
-					fetch(fixUrl(url))
-					.then((res) => {
-						console.log(res);
-					})
-					.catch(() => {
-						self.postMessage({"CMD": "failed", "url": event.request.url});
-					});
+	event.respondWith(async function() {
+		// Opening the cache
+		// Await can be used inside async function so using it openly
+		let cache = await caches.open(`${version}:pixel`), 
+			cachedResponse = await cache.match(event.request);
+		
+		console.log(cache);
+		console.log(cachedResponse);
+		// Checking if there url pathname contain pixel.gif or not
+		if(/pixel.gif$/.test(url.pathname)) {
+			if(cachedResponse){
+				fetch(fixUrl(url))
+				.then((res) => {
+					console.log('debug', res);
+					self.postMessage({"CMD": "fetched", "url": res.url});
+				})
+				.catch(() => {
+					self.postMessage({"CMD": "failed", "url": event.request.url});
+				});
 
-					// Returning the cached value
-					return response;
-				} 
-				else{
-					return fetch(fixUrl(url))
-					.then((res) => {
-						console.log(res);
-						// response may be used only once
-						// we need to save clone to put one copy in cache
-						// and serve second one
-						let resClone = res.clone();
-						caches.open(`${version}:pixel`).then((cache) => {
-							cache.put(event.request, resClone);
-						});
-
-						// Returning the response after fetching
-						return res;
-					}).catch(() => {
-						self.postMessage({"CMD": "failed", "url": event.request.url});
-					});
-				}
+				event.waitUntil(cache.add(event.request));
+				return cachedResponse;
 			}
-			else return fetch(event.request);
-		})
-	);
+			else{
+				return fetch(fixUrl(url))
+				.then((res) => {
+					console.log(res);
+					// response may be used only once
+					// we need to save clone to put one copy in cache
+					cache.put(event.request, res.clone());
+
+					self.postMessage({"CMD": "fetched", "url": res.url});
+					
+					// Returning the response after fetching
+					return res;
+				}).catch(() => {
+					self.postMessage({"CMD": "failed", "url": event.request.url});
+				});
+			}
+		}
+		// Handler for cached response for test1.jpg
+		else if(cachedResponse){
+			event.waitUntil(cache.add(event.request));
+			return cachedResponse;
+		}
+		// Fetching the response over network and returning it
+		else return fetch(event.request);
+	}());
 })
