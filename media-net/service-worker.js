@@ -9,32 +9,24 @@ QUEUE_OBJECT = {
 			// If offline wait for 2s before making the call again
 			if(navigator.onLine){
 				this.networkCall = true;
-				let url = this.queue.pop(0),
-				// Create a new XMLHttpRequest object
-				xhr = new XMLHttpRequest();
-
-				xhr.open('GET', url);
-				// Send the request over the network
-				xhr.send();
-				// This will be called after the response is received
-				xhr.onload = () => {
+				let url = this.queue.pop(0);
+				fetch(url)
+				.then((res) => {
 					this.networkCall = false;
-					if(xhr.status === 200){
-						if(this.queue.length > 0) this.callee();
-					}
-					else{
+					if(!res.ok){
 						this.queue.unshift(url);
 						this.callee();
 					}
-				};
-				// If the network error happen or for some reason not able to make the call
-				// Set the variable value so it will get pushed in the queue at the beginning
-				xhr.onerror = () => {
-					console.log('Log: Something went wrong.');
+					else if(this.queue.length > 0) this.callee();
+				})
+				.catch((err) => {
+					// If the network error happen or for some reason not able to make the call
+					// Set the variable value so it will get pushed in the queue at the beginning
+					console.log('Log: Something went wrong.', err);
 					this.networkCall = false;
 					this.queue.unshift(url);
-					this.callee();
-				};
+					this.callee();	
+				})
 			}
 			else{
 				console.log('Log: Browser is offline.');
@@ -75,7 +67,7 @@ fixUrl = (purl) => {
 		if(switchObject[split[0]] !== undefined) queryArr.push(`${switchObject[split[0]]}=${split[1]}`);
 		else queryArr.push(`${split[0]}=${split[1]}`);
 	});
-
+	queryArr.push(`____a_=${Math.random() * 1E16}`);
 	return `${purl.protocol}//${purl.host}${purl.pathname}?${queryArr.join('&')}${purl.hash}`;
 };
 
