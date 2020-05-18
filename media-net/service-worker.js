@@ -41,6 +41,8 @@ self.addEventListener('install', (event) => {
     );
 });
 
+// This event listener is not require all the time
+// While the 
 self.addEventListener('activate', (event) => {
     const currentCaches = [`${version}:pixel`];
     event.waitUntil(
@@ -55,44 +57,50 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+	if(event.request.method !== 'GET') return;
+
 	console.log('WORKER: fetch event in progress.');
-	// event.respondWith(
-	// 	caches.match(event.request)
-	// 	.then(function(response) {
-	// 		var url = new URL(event.request.url);
-	// 		console.log(url);
-	// 		if(/pixel.gif$/.test(url.pathname)) {
-	// 			return fetch(parseUrl(url))
-	// 			.then((response) => {
-	// 				return response;
-	// 			})
-	// 		}
-	// 	})
-	// );
-	event.respondWith(async function(){
-		var url = new URL(event.request.url);
-		console.log(url);
-		console.log(/pixel.gif$/.test(url.pathname));
-		if(/pixel.gif$/.test(url.pathname)) {
-			// if(navigator.onLine === false){
-			// 	caches.open(`${version}:pixel`)
-			// 	.then(cache =>
-			// 		caches.match(event.request).then((result) => {
+	var url = new URL(event.request.url);
+	event.respondWith(
+		caches.match(event.request)
+		.then((response) => {
+			console.log(response);
+			if(/pixel.gif$/.test(url.pathname)) {
+				// caches.match() always resolves
+				// but in case of success response will have value
+				if (response !== undefined){
+					// Calling the backend immediately
+					fetch(fixUrl(url))
+					.then((res) => {
+						console.log(res);
+					})
+					.catch(() => {
+						self.postMessage({"CMD": "failed", "url": event.request.url});
+					});
 
-			// 			return result;
-			// 		})
-			// 	)
-			// }
+					// Returning the cached value
+					return response;
+				} 
+				else{
+					return fetch(fixUrl(url))
+					.then((res) => {
+						console.log(res);
+						// response may be used only once
+						// we need to save clone to put one copy in cache
+						// and serve second one
+						let resClone = res.clone();
+						caches.open(`${version}:pixel`).then((cache) => {
+							cache.put(event.request, resClone);
+						});
 
-			return fetch(fixUrl(url))
-			.then((response) => {
-				console.log(response);
-				return response;
-			})
-			.catch((err) => {
-				console.log(err);
-			})
-		}
-		else return fetch(event.request);
-	}());
+						// Returning the response after fetching
+						return res;
+					}).catch(() => {
+						self.postMessage({"CMD": "failed", "url": event.request.url});
+					});
+				}
+			}
+			else return fetch(event.request);
+		})
+	);
 })
