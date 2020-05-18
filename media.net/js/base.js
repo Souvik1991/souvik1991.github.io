@@ -10,7 +10,7 @@
     body = (document.body || document.getElementsByTagName('body')[0]);
 
     bindEvent(document.getElementById('div'), 'click', () => {
-        fetch(`${window.location.protocol}//${window.location.host}/media.net/image/pixel.gif?interaction=UserClick&client=ad_media&os_name=macos&x1=google&x2=email&x3=pdfconvert&landing_url=abcd1`)
+        fetch(`${window.location.protocol}//${window.location.host}/media.net/image/pixel.gif?interaction=UserClick&client=ad_media&os_name=macos&x1=google&x2=email&x3=pdfconvert&landing_url=abcd1&_=${Math.random() * 1E16}`)
         .then(response => response.blob())
         .then(images => {
             // outside = URL.createObjectURL(images);
@@ -23,11 +23,11 @@
         
         var oReq = new XMLHttpRequest();
         oReq.addEventListener("load", reqListener);
-        oReq.open("GET", `${window.location.protocol}//${window.location.host}/media.net/image/pixel.gif?interaction=UserClick&client=ad_media&os_name=macos&x1=google&x2=email&x3=pdfconvert&landing_url=abcd1`);
+        oReq.open("GET", `${window.location.protocol}//${window.location.host}/media.net/image/pixel.gif?interaction=UserClick&client=ad_media&os_name=macos&x1=google&x2=email&x3=pdfconvert&landing_url=abcd1&_=${Math.random() * 1E16}`);
         oReq.send();
 
         var image = document.createElement('img');
-        image.setAttribute('src', `${window.location.protocol}//${window.location.host}/media.net/image/pixel.gif?interaction=UserClick&client=ad_media&os_name=macos&x1=google&x2=email&x3=pdfconvert&landing_url=abcd1`);
+        image.setAttribute('src', `${window.location.protocol}//${window.location.host}/media.net/image/pixel.gif?interaction=UserClick&client=ad_media&os_name=macos&x1=google&x2=email&x3=pdfconvert&landing_url=abcd1&_=${Math.random() * 1E16}`);
         body.appendChild(image);
     });
 
