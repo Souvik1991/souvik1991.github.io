@@ -1,10 +1,3 @@
-// self.addEventListener('message', (e) => {
-// 	var data = e.data;
-// 	if(navigator.onLine){
-		
-// 	}
-// });
-
 var version = 'v1',
 fixUrl = (purl) => {
 	var // purl = new URL(url),
@@ -37,7 +30,7 @@ self.addEventListener('install', (event) => {
         caches
         .open(`${version}:pixel`)
         .then((cache) => {
-            return cache.addAll(['/media.net/', '/media.net/image/pixel.gif'])
+            return cache.addAll(['./media.net/', './media.net/image/', './media.net/image/pixel.gif'])
         })
         .then(function() {
             console.log('WORKER: install completed');
@@ -45,7 +38,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
     const currentCaches = [`${version}:pixel`];
     event.waitUntil(
 		caches.keys().then(cacheNames => {
@@ -58,12 +51,22 @@ self.addEventListener('activate', event => {
     );
 });
 
-self.addEventListener('fetch', function(event){
+self.addEventListener('fetch', (event) => {
 	console.log('WORKER: fetch event in progress.');
-	var url = new URL(event.request.url);
-	console.log(url);
-	if(/pixel.gif$/.test(url.pathname)) {
-		event.respondWith(async function(){
+	event.respondWith(async function(){
+		var url = new URL(event.request.url);
+		console.log(url);
+		if(/pixel.gif$/.test(url.pathname)) {
+			// if(navigator.onLine === false){
+			// 	caches.open(`${version}:pixel`)
+			// 	.then(cache =>
+			// 		caches.match(event.request).then((result) => {
+
+			// 			return result;
+			// 		})
+			// 	)
+			// }
+
 			return fetch(parseUrl(url))
 			.then((response) => {
 				return response;
@@ -71,9 +74,7 @@ self.addEventListener('fetch', function(event){
 			.catch((err) => {
 				console.log(err);
 			})
-		}());
-	}
-	else event.respondWith(async function(){
-		return fetch(event.request)
+		}
+		else return fetch(event.request);
 	}());
 })

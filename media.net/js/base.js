@@ -47,12 +47,16 @@
             //     localStorage.setItem(localKey, JSON.stringify([]));
             // }
 
-            navigator.serviceWorker.register('/media.net/js/service-worker.js')
-            .then(() => {
-                console.log('Log: service worker registration complete.');
+            navigator.serviceWorker.register('./media.net/js/service-worker.js', {scope: './media.net/'})
+            .then((reg) => {
+                console.log(`Log: Registration succeeded. Scope is ${reg.scope}`);
             }, () => {
                 console.log('Log: service worker registration failure.');
             });
+
+            navigator.serviceWorker.onmessage = function(messageevent) {
+                console.log(messageevent);
+            }
         });
 
         // bindEvent(window, 'beforeunload', () => {
