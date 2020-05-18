@@ -1,9 +1,9 @@
 let version = 'v1',
 clientId = undefined,
 QUEUE_OBJECT = {
-	queue: [],
-	networkCall: false,
-	stId: undefined,
+	queue: [], // The main queue where all links will be stored for sync
+	networkCall: false, // Variable to use while syncing
+	stId: undefined, // Store timeout id, while browser is offline
 	callee(){
 		if(!this.networkCall){
 			// Check the browser is online or offline
@@ -35,6 +35,7 @@ QUEUE_OBJECT = {
 				}
 			}
 			else{
+				// Timeout id already set so, no need to set again
 				if(this.stId !== undefined) return; 
 				console.log('Log: Browser is offline.');
 				if(this.queue.length > 0)
@@ -46,6 +47,7 @@ QUEUE_OBJECT = {
 			}
 		}
 	},
+	// Getter method of an object
 	get Queue() {
 		return this.queue
 	},
@@ -55,6 +57,8 @@ QUEUE_OBJECT = {
 		this.callee();
 	}
 },
+// Fix the URL params so that the server can read the parameters
+// Parsing the query parameters, creating an array of updated parameters
 fixUrl = (purl) => {
 	var // purl = new URL(url),
 		queries = purl.search.replace(/^\?/, '').split('&'),
@@ -76,6 +80,7 @@ fixUrl = (purl) => {
 		if(switchObject[split[0]] !== undefined) queryArr.push(`${switchObject[split[0]]}=${split[1]}`);
 		else queryArr.push(`${split[0]}=${split[1]}`);
 	});
+	// Pushing random number in query param, so that cache does not create problem
 	queryArr.push(`____a_=${Math.random() * 1E16}`);
 	return `${purl.protocol}//${purl.host}${purl.pathname}?${queryArr.join('&')}${purl.hash}`;
 };

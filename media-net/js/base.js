@@ -1,18 +1,23 @@
 (() => {
     var localKey = 'mdata',
     currentServiceWorker = undefined,
+    // Custom bind event, for different browsers
     bindEvent = (el, event, fn) => {
 		el.addEventListener ? el.addEventListener(event, fn, false) : el.attachEvent && el.attachEvent('on' + event, fn);
-	},
+    },
+    // This function get stored unsynced data from localstorage
+    // Then pass them to service worker to sync
     syncData = () => {
         var mdata = localStorage.getItem(localKey); // Fetching all unsynced data
         if(mdata && currentServiceWorker){
-            mdata = JSON.parse(mdata);
+            mdata = JSON.parse(mdata); // Parsing the json
+            // Checking if there any pixel links to sync
             if(Array.isArray(mdata) && mdata.length > 0){
                 currentServiceWorker.postMessage({
                     cmd: 'SYNC', 
                     data: mdata
                 });
+                // After passing the data, immediately deleting the data from localstorage
                 localStorage.removeItem(localKey);
             }
         }
@@ -30,8 +35,8 @@
                 { scope: '/media-net/' }
             )
             .then((reg) => {
-                // After the register the working
-                // Checking the state or the worker
+                // After registering the working
+                // Checking the state of the worker
                 var serviceWorker;
                 if(reg.installing) {
                     serviceWorker = reg.installing;
@@ -46,7 +51,7 @@
 
                 // Checking the worker is already on activated state or not
                 // If yes, then assign the worker to "currentServiceWorker" variable
-                // So that we can use if to pass variables
+                // So that we can use if to pass data
                 if(serviceWorker.state === 'activated'){ 
                     currentServiceWorker = serviceWorker;
                     syncData();
@@ -78,19 +83,21 @@
             // When worker post a message, we will be able to receive it here
             navigator.serviceWorker.onmessage = (msg) => {
                 if(msg && msg.data && msg.data.cmd){
+                    // Storing the unsynced events in localstorage
+                    // So that we can sync them later on
                     if(msg.data.cmd === 'STORE') localStorage.setItem(localKey, JSON.stringify(msg.data.data));
                 }
             };
         });
 
-        // Binding the before unload event with the window
-        // Before the tab close it will check if there any remaining click events in the queue
-        // and the worker will return them to store in local storage
+        // Binding the beforeunload event with the window
+        // Before the tab close it will check if there any remaining pixel events in the queue
+        // and the worker will return them to store them in local storage
         bindEvent(window, 'beforeunload', () => {
             if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
         });
 
-        // This functions will trigger pixel code with different parameter
+        // This functions will trigger pixel code 
         var adBlock = document.querySelectorAll('.ad-block');
         adBlock.forEach((block) => {
             bindEvent(block, 'click', () => {
