@@ -84,7 +84,7 @@ self.addEventListener('fetch', (event) => {
 			// 	)
 			// }
 
-			return fetch(parseUrl(url))
+			return fetch(fixUrl(url))
 			.then((response) => {
 				return response;
 			})
