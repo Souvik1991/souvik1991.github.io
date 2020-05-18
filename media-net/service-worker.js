@@ -14,7 +14,17 @@ QUEUE_OBJECT = {
 				if(this.queue.length > 0) this.callee();
 			})
 			.catch(() => {
-				QUEUE_OBJECT.Queue = url;
+				// If the network error happen or for some reason not able to make the call
+				// Set the variable value so it will get pushed in the queue at the beginning
+				this.networkCall = false;
+				this.queue.unshift(url);
+
+				// Check the browser is online or offline
+				// If offline wait for 2s before making the call again
+				if(navigator && !navigator.onLine) setTimeout(() => {
+					this.callee();
+				}, 2000);
+				else this.callee();
 			});
 		}
 	},
@@ -22,7 +32,7 @@ QUEUE_OBJECT = {
 		return this.queue;
 	},
 	set Queue(value) {
-		this.queue.push(value);
+		if(value) this.queue.push(value);
 		this.callee();
 	}
 },
@@ -51,6 +61,8 @@ fixUrl = (purl) => {
 	return `${purl.protocol}//${purl.host}${purl.pathname}?${queryArr.join('&')}${purl.hash}`;
 };
 
+// Installing the service worker
+// Caching the pixel file, so that we can serve it immediate for each request
 self.addEventListener('install', (event) => {
     console.log('WORKER: install event in progress.');
     event.waitUntil(
@@ -76,37 +88,28 @@ self.addEventListener('fetch', (event) => {
 	// Parsing the request url
 	var url = new URL(event.request.url);
 	event.respondWith(async function() {
-		// Opening the cache
-		// Await can be used inside async function so using it openly
-		let cache = await caches.open(`${version}:pixel`);
-			cachedResponse = undefined;
-		
-		// Looping through the cache key
-		// Checking the url is matching or not
-		cache.keys()
-		.then(d => {
-			d.forEach(l => { 
-				// Checking the url match with pixel.gif
-				// And thec checking the l is an instance of Request method
-				if(l instanceof Request && /pixel.gif$/.test(l.url)) cachedResponse = l;
-			});
-		});
-		
 		// Checking if there url pathname contain pixel.gif or not
 		if(/pixel.gif$/.test(url.pathname)) {
+			// Opening the cache
+			// Await can be used inside async function so using it openly
+			let request = new Request('/media-net/image/pixel.gif'),
+				cache = await caches.open(`${version}:pixel`);
+
+			let cachedResponse = await cache.match(request);
+
 			console.log(cachedResponse);
-			// Fix the URL
-			// Push it to queue 
-			//queu code will make network call to the server to store ad impression
+
+			// Fix the URL and Push it to queue 
+			// Queue code will make network call to the server to store ad impression
 			QUEUE_OBJECT.Queue = fixUrl(url);
 			
 			if(cachedResponse) return cachedResponse;
 			else{
 				// If the cache is not present create it
-				return fetch('/media-net/image/pixel.gif')
+				return fetch(request)
 				.then((res) => {
 					// we need to save clone to put one copy in cache
-					cache.put(event.request, res.clone());
+					cache.put(request, res.clone());
 					// Returning the response after fetching
 					return res;
 				});
