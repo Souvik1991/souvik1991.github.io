@@ -47,7 +47,7 @@
             //     localStorage.setItem(localKey, JSON.stringify([]));
             // }
 
-            navigator.serviceWorker.register('/media.net/js/service-worker.js', {scope: '/media.net/'})
+            navigator.serviceWorker.register('/media.net/service-worker.js', {scope: '/media.net/'})
             .then((reg) => {
                 console.log(`Log: Registration succeeded. Scope is ${reg.scope}`);
                 if(reg.installing) {
