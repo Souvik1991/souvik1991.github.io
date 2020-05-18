@@ -57,6 +57,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+	console.log(event.request.method);
 	if(event.request.method !== 'GET') return;
 
 	console.log('WORKER: fetch event in progress.');
