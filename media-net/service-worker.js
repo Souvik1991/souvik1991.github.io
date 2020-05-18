@@ -86,6 +86,7 @@ self.addEventListener('fetch', (event) => {
 
 			return fetch(fixUrl(url))
 			.then((response) => {
+				console.log(response);
 				return response;
 			})
 			.catch((err) => {
