@@ -1,4 +1,5 @@
 var version = 'v1',
+_this = self,
 fixUrl = (purl) => {
 	var // purl = new URL(url),
 		queries = purl.search.replace(/^\?/, '').split('&'),
@@ -31,7 +32,6 @@ self.addEventListener('install', (event) => {
         .open(`${version}:pixel`)
         .then((cache) => {
             return cache.addAll([
-				'/media-net/image/test1.jpg',
 				'/media-net/image/pixel.gif'
 			])
         })
@@ -68,43 +68,47 @@ self.addEventListener('fetch', (event) => {
 		// Opening the cache
 		// Await can be used inside async function so using it openly
 		let cache = await caches.open(`${version}:pixel`);
-			cachedResponse = await cache.match(event.request);
+			cachedResponse = undefined;
 		
-		console.log(cache);
-		console.log(cache.keys());
-		console.log(cachedResponse);
+		// Looping through the cache key
+		// Checking the url is matching or not
+		cache.keys()
+		.then(d => { 
+			d.every(l => { 
+				// Checking the url match with pixel.gif
+				// And thec checking the l is an instance of Request method
+				if(l instanceof Request && /pixel.gif$/.test(l.url)){
+					cachedResponse = l;
+					return false;
+				}
+				return true;
+			});
+		});
+		
 		// Checking if there url pathname contain pixel.gif or not
 		if(/pixel.gif$/.test(url.pathname)) {
-			if(cachedResponse){
-				fetch(fixUrl(url))
-				.then((res) => {
-					console.log('debug', res);
-					// self.postMessage({"CMD": "fetched", "url": res.url});
-				})
-				.catch(() => {
-					// self.postMessage({"CMD": "failed", "url": event.request.url});
-				});
-				return cachedResponse;
-			}
+			// Fix the URL and make network call to server to store ad impression
+			fetch(fixUrl(url))
+			.then((res) => {
+				console.log('debug', res);
+				// _this.postMessage({"CMD": "fetched", "url": res.url});
+			})
+			.catch(() => {
+				// _this.postMessage({"CMD": "failed", "url": event.request.url});
+			});
+
+			if(cachedResponse) return cachedResponse;
 			else{
-				return fetch(fixUrl(url))
+				// If the cache is not present create it
+				return fetch('/media-net/image/pixel.gif')
 				.then((res) => {
-					console.log(res);
-					// response may be used only once
 					// we need to save clone to put one copy in cache
 					cache.put(event.request, res.clone());
-
-					// self.postMessage({"CMD": "fetched", "url": res.url});
-					
 					// Returning the response after fetching
 					return res;
-				}).catch(() => {
-					// self.postMessage({"CMD": "failed", "url": event.request.url});
 				});
 			}
 		}
-		// Handler for cached response for test1.jpg
-		else if(cachedResponse) return cachedResponse;
 		// Fetching the response over network and returning it
 		else return fetch(event.request);
 	}());
