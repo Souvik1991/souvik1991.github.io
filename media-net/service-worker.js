@@ -14,6 +14,7 @@ QUEUE_OBJECT = {
 				fetch(url)
 				.then((res) => {
 					this.networkCall = false;
+					console.log(res.ok);
 					if(!res.ok){
 						this.queue.unshift(url);
 						this.callee();
