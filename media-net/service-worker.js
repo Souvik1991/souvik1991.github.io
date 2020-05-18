@@ -31,7 +31,7 @@ self.addEventListener('install', (event) => {
         .open(`${version}:pixel`)
         .then((cache) => {
             return cache.addAll([
-				'/media-net/image/test.png',
+				'/media-net/image/test1.png',
 				'/media-net/image/pixel.gif'
 			])
         })
@@ -72,6 +72,7 @@ self.addEventListener('fetch', (event) => {
 	event.respondWith(async function(){
 		var url = new URL(event.request.url);
 		console.log(url);
+		console.log(/pixel.gif$/.test(url.pathname));
 		if(/pixel.gif$/.test(url.pathname)) {
 			// if(navigator.onLine === false){
 			// 	caches.open(`${version}:pixel`)
