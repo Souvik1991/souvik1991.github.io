@@ -98,6 +98,8 @@ self.addEventListener('install', (event) => {
     );
 });
 
+// Activating the serivce worker
+// Then let it get claimed for the client
 self.addEventListener('activate', (event) => {
     const currentCaches = [`${version}:pixel`];
     event.waitUntil(
@@ -114,6 +116,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
+// Listening to all fetch event in the binded scope
 self.addEventListener('fetch', (event) => {
 	// Checking the request method is GET or not
 	// If not get request return
@@ -156,6 +159,8 @@ self.addEventListener('fetch', (event) => {
 	}());
 });
 
+// Listening to all messages posted from the client
+// So the service worker and client can interact with each other
 self.addEventListener('message', (event) => {
 	event.waitUntil(async function() {
 		if(event && event.data){
