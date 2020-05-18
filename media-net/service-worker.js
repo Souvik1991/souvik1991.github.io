@@ -7,6 +7,10 @@ QUEUE_OBJECT = {
 		if(!this.networkCall){
 			this.networkCall = true;
 			var url = this.queue.pop(0);
+
+			console.log(navigator);
+			console.log(navigator.onLine);
+
 			fetch(url)
 			.then((res) => {
 				console.log('debug', res);
