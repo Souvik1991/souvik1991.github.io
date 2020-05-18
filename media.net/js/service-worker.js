@@ -37,7 +37,7 @@ self.addEventListener('install', (event) => {
         caches
         .open(`${version}:pixel`)
         .then((cache) => {
-            return cache.addAll(['/', '/image/pixel.gif'])
+            return cache.addAll(['/media.net/', '/media.net/image/pixel.gif'])
         })
         .then(function() {
             console.log('WORKER: install completed');
