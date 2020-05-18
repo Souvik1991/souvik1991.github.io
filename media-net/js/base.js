@@ -87,10 +87,10 @@
         // bindEvent(window, 'beforeunload', () => {
         //     if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
         // });
-        // bindEvent(document.getElementById('close'), 'click', () => {
-        //     console.log(currentServiceWorker);
-        //     if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
-        // });
+        bindEvent(document.getElementById('close'), 'click', () => {
+            console.log(currentServiceWorker);
+            if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
+        });
 
         // This functions will trigger pixel code with different parameter
         bindEvent(document.getElementById('div'), 'click', () => {
