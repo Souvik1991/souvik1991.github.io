@@ -94,11 +94,10 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-	console.log(event);
 	// Checking the request method is GET or not
 	// If not get request return
 	if(event.request.method !== 'GET') return;
-	console.log('Log: fetch event in progress.');
+	console.log('Log: fetch event in progress.', event);
 
 	// Parsing the request url
 	var url = new URL(event.request.url);
