@@ -7,7 +7,7 @@ QUEUE_OBJECT = {
 	callee(){
 		if(!this.networkCall){
 			// Check the browser is online or offline
-			// If offline wait for 2s before making the call again
+			// If offline wait for 5s before making the call again
 			if(navigator.onLine){
 				this.networkCall = true;
 				let url = this.queue.pop(0);
@@ -37,7 +37,7 @@ QUEUE_OBJECT = {
 					console.log('Log: timeout done, calling again.');
 					this.stId = undefined;
 					this.callee();
-				}, 2000);
+				}, 5000);
 			}
 		}
 	},
@@ -94,6 +94,7 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+	console.log(event);
 	// Checking the request method is GET or not
 	// If not get request return
 	if(event.request.method !== 'GET') return;
