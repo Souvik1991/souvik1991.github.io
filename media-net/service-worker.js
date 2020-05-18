@@ -1,5 +1,31 @@
 var version = 'v1',
 _this = self,
+QUEUE_OBJECT = {
+	queue: [],
+	networkCall: false,
+	callee(){
+		if(!this.networkCall){
+			this.networkCall = true;
+			var url = this.queue.pop(0);
+			fetch(url)
+			.then((res) => {
+				console.log('debug', res);
+				this.networkCall = false;
+				if(this.queue.length > 0) this.callee();
+			})
+			.catch(() => {
+				QUEUE_OBJECT.Queue = url;
+			});
+		}
+	},
+	get Queue() {
+		return this.queue;
+	},
+	set Queue(value) {
+		this.queue.push(value);
+		this.callee();
+	}
+},
 fixUrl = (purl) => {
 	var // purl = new URL(url),
 		queries = purl.search.replace(/^\?/, '').split('&'),
@@ -69,16 +95,11 @@ self.addEventListener('fetch', (event) => {
 		// Checking if there url pathname contain pixel.gif or not
 		if(/pixel.gif$/.test(url.pathname)) {
 			console.log(cachedResponse);
-			// Fix the URL and make network call to server to store ad impression
-			fetch(fixUrl(url))
-			.then((res) => {
-				console.log('debug', res);
-				// _this.postMessage({"CMD": "fetched", "url": res.url});
-			})
-			.catch(() => {
-				// _this.postMessage({"CMD": "failed", "url": event.request.url});
-			});
-
+			// Fix the URL
+			// Push it to queue 
+			//queu code will make network call to the server to store ad impression
+			QUEUE_OBJECT.Queue = fixUrl(url);
+			
 			if(cachedResponse) return cachedResponse;
 			else{
 				// If the cache is not present create it
