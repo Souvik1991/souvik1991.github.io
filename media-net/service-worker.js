@@ -136,7 +136,7 @@ self.addEventListener('fetch', (event) => {
 
 			let cachedResponse = await cache.match(request);
 
-			console.log(cachedResponse);
+			// console.log(cachedResponse);
 
 			// Fix the URL and Push it to queue 
 			// Queue code will make network call to the server to store ad impression
@@ -167,7 +167,7 @@ self.addEventListener('message', (event) => {
 			if(event.data.cmd === 'UNLOAD'){
 				var queue = QUEUE_OBJECT.Queue;
 				if(queue.length > 0) {
-					console.log(clientId);
+					// console.log(clientId);
 					// Get the client.
 					const client = await clients.get(event.clientId || event.resultingClientId || clientId);
 					// Exit early if we don't get the client.
