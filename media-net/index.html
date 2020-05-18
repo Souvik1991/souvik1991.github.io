@@ -2,10 +2,49 @@
     <head>
         <title>Service Worker - Media.net</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+        <style>
+            body{
+                margin: 0;
+                font-family: 'Roboto', sans-serif;
+            }
+            .flex-container{
+            	display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                padding: 0 10px;
+                align-items: center;
+            }
+            .flexbox{
+            	flex-grow: 1;
+        		align-self: auto;
+                align-items: center;
+                justify-content: center;
+            }
+            .ad-block{
+            	margin: 20px auto; 
+                height:90px; 
+                max-width: 728px; 
+                background-color:#ececec;
+            }
+            .ad-block.rect{
+            	height: 250px; 
+                max-width: 300px; 
+            }
+        </style>
     </head>
     <body>
-        <div id="div" style="height:200px;background-color:red;"></div>
-        <div id="close" style="height:100px;width:100px;background-color:#000;"></div>
+        <div class="flex-container">
+            <div class="ad-block flexbox flex-container">
+                Click here to trigger pixel events
+            </div>
+        </div>
+        <div class="flex-container">
+            <div class="ad-block rect flexbox flex-container">Click here to trigger pixel events</div>
+            <div class="ad-block rect flexbox flex-container">Click here to trigger pixel events</div>
+        </div>
+        <!-- <div id="close" style="height:100px;width:100px;background-color:#000;"></div> -->
         <script src="./js/base.js" type="text/javascript"></script>
     </body>
 </html>

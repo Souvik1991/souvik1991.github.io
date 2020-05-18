@@ -86,30 +86,26 @@
         // Binding the before unload event with the window
         // Before the tab close it will check if there any remaining click events in the queue
         // and the worker will return them to store in local storage
-        // bindEvent(window, 'beforeunload', () => {
-        //     if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
-        // });
-        bindEvent(document.getElementById('close'), 'click', () => {
-            console.log(currentServiceWorker);
+        bindEvent(window, 'beforeunload', () => {
             if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
         });
+        // bindEvent(document.getElementById('close'), 'click', () => {
+        //     console.log(currentServiceWorker);
+        //     if(currentServiceWorker) currentServiceWorker.postMessage({'cmd':'UNLOAD'});
+        // });
 
         // This functions will trigger pixel code with different parameter
-        bindEvent(document.getElementById('div'), 'click', () => {
-            function reqListener () {
-                console.log(this.responseText);
-            }
-    
-            var oReq = new XMLHttpRequest();
-            oReq.addEventListener("load", reqListener);
-            oReq.open("GET", `${window.location.protocol}//${window.location.host}/media-net/image/pixel.gif?interaction=UserClick&client=ad_media&os_name=macos&x1=google&x2=email&x3=pdfconvert&landing_url=abcd1`);
-            oReq.send();
-    
-            var oReq = new XMLHttpRequest();
-            oReq.addEventListener("load", reqListener);
-            oReq.open("GET", `${window.location.protocol}//${window.location.host}/media-net/image/test1.jpg`);
-            oReq.send();
-        });    
+        var adBlock = document.querySelectorAll('.ad-block');
+        adBlock.forEach((block) => {
+            bindEvent(block, 'click', () => {
+                var first = new XMLHttpRequest();
+                first.addEventListener("load", () => {
+                    console.log(this.responseText);
+                });
+                first.open("GET", `${window.location.protocol}//${window.location.host}/media-net/image/pixel.gif?interaction=UserClick&client=ad_media&os_name=macos&x1=google&x2=email&x3=pdfconvert&landing_url=abcd1`);
+                first.send();
+            })
+        });
     }
     else console.log('Log: Service worker not supported.')
 })();

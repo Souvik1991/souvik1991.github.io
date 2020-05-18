@@ -102,9 +102,9 @@ self.addEventListener('fetch', (event) => {
 	// Checking the request method is GET or not
 	// If not get request return
 	if(event.request.method !== 'GET') return;
-	console.log('Log: fetch event in progress.', event);
+	console.log('Log: fetch event in progress.', event.clientId);
 
-	if(!clientId && event.clientId) clientId = event.clientId;
+	if(!clientId && (event.clientId || event.resultingClientId)) clientId = event.clientId || event.resultingClientId;
 	// Parsing the request url
 	var url = new URL(event.request.url);
 	event.respondWith(async function() {
@@ -148,7 +148,7 @@ self.addEventListener('message', (event) => {
 				if(queue.length > 0) {
 					console.log(clientId);
 					// Get the client.
-					const client = await clients.get(event.clientId || clientId);
+					const client = await clients.get(event.clientId || event.resultingClientId || clientId);
 					// Exit early if we don't get the client.
 					// Eg, if it closed.
 					if(!client) return;
