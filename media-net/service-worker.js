@@ -31,7 +31,7 @@ self.addEventListener('install', (event) => {
         .open(`${version}:pixel`)
         .then((cache) => {
             return cache.addAll([
-				'/media-net/image/test1.png',
+				'/media-net/image/test1.jpg',
 				'/media-net/image/pixel.gif'
 			])
         })
