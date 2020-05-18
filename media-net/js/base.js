@@ -98,10 +98,12 @@
         var adBlock = document.querySelectorAll('.ad-block');
         adBlock.forEach((block) => {
             bindEvent(block, 'click', () => {
-                var first = new XMLHttpRequest();
-                first.addEventListener("load", () => {
+                function reqListener(){
                     console.log(this.responseText);
-                });
+                };
+        
+                var first = new XMLHttpRequest();
+                first.addEventListener("load", reqListener);
                 first.open("GET", `${window.location.protocol}//${window.location.host}/media-net/image/pixel.gif?interaction=UserClick&client=ad_media&os_name=macos&x1=google&x2=email&x3=pdfconvert&landing_url=abcd1`);
                 first.send();
             })

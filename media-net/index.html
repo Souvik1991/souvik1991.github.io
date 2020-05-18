@@ -8,6 +8,10 @@
                 margin: 0;
                 font-family: 'Roboto', sans-serif;
             }
+            .container{
+                max-width: 870px;
+                margin: auto;
+            }
             .flex-container{
             	display: flex;
                 flex-direction: row;
@@ -24,7 +28,7 @@
             }
             .ad-block{
             	margin: 20px auto; 
-                height:90px; 
+                height: 90px; 
                 max-width: 728px; 
                 background-color:#ececec;
                 cursor: pointer;
@@ -36,14 +40,21 @@
         </style>
     </head>
     <body>
-        <div class="flex-container">
-            <div class="ad-block flexbox flex-container">
-                Click here to trigger pixel events
+        <div class="container">
+            <div class="flex-container">
+                <div class="ad-block flexbox flex-container">
+                    Click here to trigger pixel events
+                </div>
             </div>
-        </div>
-        <div class="flex-container">
-            <div class="ad-block rect flexbox flex-container">Click here to trigger pixel events</div>
-            <div class="ad-block rect flexbox flex-container">Click here to trigger pixel events</div>
+            <div class="flex-container">
+                <div class="ad-block rect flexbox flex-container">Click here to trigger pixel events</div>
+                <div class="ad-block rect flexbox flex-container">Click here to trigger pixel events</div>
+            </div>
+            <div class="flex-container">
+                <div class="ad-block flexbox flex-container">
+                    Click here to trigger pixel events
+                </div>
+            </div>
         </div>
         <!-- <div id="close" style="height:100px;width:100px;background-color:#000;"></div> -->
         <script src="./js/base.js" type="text/javascript"></script>
