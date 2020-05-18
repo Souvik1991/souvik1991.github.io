@@ -70,11 +70,16 @@ self.addEventListener('fetch', (event) => {
 		let cache = await caches.open(`${version}:pixel`);
 			cachedResponse = undefined;
 		
+		console.log(cache);
 		// Looping through the cache key
 		// Checking the url is matching or not
 		cache.keys()
 		.then(d => { 
+			console.log(d);
 			d.every(l => { 
+				console.log(l);
+				console.log(l instanceof Request);
+				console.log(/pixel.gif$/.test(l.url));
 				// Checking the url match with pixel.gif
 				// And thec checking the l is an instance of Request method
 				if(l instanceof Request && /pixel.gif$/.test(l.url)){
@@ -84,6 +89,8 @@ self.addEventListener('fetch', (event) => {
 				return true;
 			});
 		});
+
+		console.log(cachedResponse);
 		
 		// Checking if there url pathname contain pixel.gif or not
 		if(/pixel.gif$/.test(url.pathname)) {
