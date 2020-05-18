@@ -56,7 +56,7 @@
                         console.log('Log: Service worker state changed to', e.target.state);
                         console.log(reg);
                         console.log(serviceWorker);
-                        consol.log(e);
+                        console.log(e);
                         // Checking the current state is activated or not
                         if(e.target.state === 'activated'){
                             currentServiceWorker = reg.active;
