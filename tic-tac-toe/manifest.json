@@ -1,19 +1,19 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Tic Tac Toe",
+  "name": "Tic Tac Toe App with React and Redux",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "tic-tac-toe/favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "tic-tac-toe/logo192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "tic-tac-toe/logo512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
