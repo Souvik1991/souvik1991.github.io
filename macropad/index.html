@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MacroPass Configurator</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="https://unpkg.com/alpinejs"></script>
+</head>
+<body>
+    <div class="app-shell" x-data="macroPassApp()" x-init="init()">
+        <header class="app-header">
+            <div class="brand-block">
+                <div class="brand-mark">
+                    <img src="favicon.svg" alt="" class="header-logo" width="30" height="30">
+                </div>
+                <div>
+                    <h1>MacroPass Configurator</h1>
+                    <p>Sharper device-first setup for macros, lighting, and system control.</p>
+                </div>
+            </div>
+
+            <div class="header-meta">
+                <div id="connectionStatus" class="status-chip" :class="session.connected ? 'status-connected' : 'status-disconnected'" x-text="session.connected ? 'Connected' : 'Disconnected'"></div>
+                <div id="headerOsChip" class="status-chip status-neutral" x-text="session.connected ? (device.os === 'mac' ? 'macOS Active' : 'Windows Active') : 'Profile Locked'"></div>
+                <div id="saveStateChip" class="status-chip" :class="saveStateClass" x-text="session.save.text"></div>
+                <div class="header-actions">
+                    <button id="connectBtn" class="ui-button" :class="session.connected ? 'ui-button--danger' : 'ui-button--connect'" type="button" @click="toggleConnection()">
+                        <span class="action-icon" :class="session.connected ? 'disconnect' : 'connect'" aria-hidden="true"></span>
+                        <span class="action-label" x-text="session.connected ? 'Disconnect' : 'Connect'"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <nav id="tabStrip" class="tab-strip" x-show="session.connected" x-cloak aria-label="Configurator Sections">
+            <template x-for="tab in tabs.items" :key="tab.key">
+                <button class="ui-button ui-button--tab" :class="{ 'ui-button--active': tabs.active === tab.key }" @click="setTab(tab.key)" x-text="tab.label"></button>
+            </template>
+        </nav>
+
+        <main class="workspace">
+            <section id="connectionGate" class="connection-gate" x-show="!session.connected" x-cloak>
+                <div class="connection-gate-card">
+                    <span class="connection-gate-kicker">Device Required</span>
+                    <h2>Connect MacroPass To Start Configuring</h2>
+                    <p>
+                        Macro setup, lighting, device state, and logs all depend on a live device session.
+                        Use the light blue <strong>Connect</strong> button in the header to load the real configuration.
+                    </p>
+                </div>
+            </section>
+
+            <div id="connectedWorkspace" class="workspace-content" x-show="session.connected" x-cloak>
+                <section id="tabMacros" class="tab-panel" x-show="tabs.active === 'macros'">
+                    <div class="macros-layout">
+                        <aside class="left-rail">
+                            <section class="panel">
+                                <div class="panel-heading">
+                                    <h2>OLED Preview</h2>
+                                    <p>Shows the 4-character labels visible on-device.</p>
+                                </div>
+                                <div class="oled-screen">
+                                    <div class="oled-status-row">
+                                        <span x-text="device.os === 'mac' ? '[MAC]' : '[WIN]'"></span>
+                                        <span x-text="`VOL ${device.brightness}`"></span>
+                                    </div>
+                                    <div class="oled-divider"></div>
+                                    <div class="oled-grid">
+                                        <template x-for="key in macros.keys" :key="`oled-${key.index}`">
+                                            <div class="oled-cell" x-text="key.disabled ? '[X]' : key.label"></div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="panel">
+                                <div class="panel-heading">
+                                    <h2>Macro Layout</h2>
+                                    <p>Select a key to edit its macro sequence.</p>
+                                </div>
+                                <div id="macroPad" class="macro-pad">
+                                    <template x-for="key in macros.keys" :key="key.index">
+                                        <button type="button" class="macro-pad-button" :class="{ 'selected': macros.selectedKey === key.index, 'disabled-key': key.disabled }" @click="selectMacroKey(key.index)">
+                                            <span class="pad-label" x-text="key.label"></span>
+                                            <span class="pad-meta" x-text="key.meta"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </section>
+                        </aside>
+
+                        <section class="main-rail">
+                            <div class="panel macro-editor-panel">
+                                <div class="macro-editor-shell">
+                                    <div class="panel-heading">
+                                        <h2>Selected Key</h2>
+                                        <p>Edit the chosen key inline instead of jumping through separate cards.</p>
+                                    </div>
+
+                                    <div class="macro-selected-bar">
+                                    <div class="flex-column-gap-8">
+                                        <span class="field-label">Key</span>
+                                        <div class="macro-selected-title" x-text="macros.selected.title"></div>
+                                        <div class="subtle-text">Selected from the pad on the left.</div>
+                                    </div>
+                                    <div class="flex-column-gap-8">
+                                        <label class="field-label" for="selectedKeyName">Key Name</label>
+                                        <input id="selectedKeyName" type="text" maxlength="12" :placeholder="macros.selected.type === 4 ? 'Enter key name' : 'Available for sequence'" :value="macros.selected.name" :disabled="macros.selected.type !== 4" @input="setKeyName($event.target.value)">
+                                    </div>
+                                    <div class="flex-column-gap-8">
+                                        <label class="field-label" for="selectedMacroType">Macro Type</label>
+                                        <select id="selectedMacroType" :value="String(macros.selected.type)" @change="setMacroType($event.target.value)">
+                                            <option value="0">Disabled</option>
+                                            <option value="4">Sequence</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="macro-section" x-show="macros.selected.type === 4">
+                                    <div class="sequence-toolbar">
+                                            <div class="flex-column-gap-8">
+                                                <span class="inline-os-tabs-title">Sequence Scope</span>
+                                                <div class="os-tabs">
+                                                    <button type="button" class="os-tab" :class="{ 'active': macros.scope === 'windows' }" @click="setMacroScope('windows')">Windows</button>
+                                                    <button type="button" class="os-tab" :class="{ 'active': macros.scope === 'mac' }" @click="setMacroScope('mac')">macOS</button>
+                                                    <button type="button" class="os-tab" :class="{ 'active': macros.scope === 'both' }" @click="setMacroScope('both')">Same for Both</button>
+                                                </div>
+                                            </div>
+                                            <div class="flex-column-gap-8">
+                                                <span class="inline-os-tabs-title">Add Step</span>
+                                                <div class="sequence-controls">
+                                                    <button type="button" class="ui-button ui-button--compact" @click="addSequenceStep('key')">Key Press</button>
+                                                    <button type="button" class="ui-button ui-button--compact" @click="addSequenceStep('text')">Text</button>
+                                                    <button type="button" class="ui-button ui-button--compact" @click="addSequenceStep('delay')">Delay</button>
+                                                    <button type="button" class="ui-button ui-button--compact" @click="addSequenceStep('release')">Release</button>
+                                                </div>
+                                            </div>
+                                    </div>
+
+                                    <div class="help-text">
+                                        <span x-text="macros.selected.scopeLabel"></span> Build multi-step macros with keys, text, delays, and release actions.
+                                    </div>
+
+                                    <div class="sequence-steps">
+                                        <template x-if="macros.selected.steps.length === 0">
+                                            <p class="help-text">No steps yet. Use the controls above to add key presses, text, delays, or release actions.</p>
+                                        </template>
+
+                                        <template x-for="(step, idx) in macros.selected.steps" :key="step.id">
+                                            <div class="sequence-step">
+                                                    <div class="step-number" x-text="idx + 1"></div>
+                                                    <div class="step-content">
+                                                        <template x-if="step.type === 'key'">
+                                                            <div class="flex-column-gap-8">
+                                                                <label>Key Press</label>
+                                                                <div class="step-modifiers">
+                                                                    <template x-for="modifier in macros.modifierOptions" :key="modifier.value">
+                                                                        <label class="checkbox-label-small">
+                                                                            <input class="modifier-check" type="checkbox" :checked="step.modifiers?.includes(modifier.value)" @change="toggleSequenceModifier(step.id, modifier.value, $event.target.checked)">
+                                                                            <span x-text="modifier.label"></span>
+                                                                        </label>
+                                                                    </template>
+                                                                </div>
+
+                                                                <template x-for="(keycode, keyIndex) in step.keys" :key="`${step.id}-${keyIndex}-${keycode}`">
+                                                                    <div class="key-selection">
+                                                                        <select
+                                                                            x-effect="$el.innerHTML = getKeyOptionMarkup(keycode); $el.value = String(keycode)"
+                                                                            @change="updateSequenceKey(step.id, keyIndex, $event.target.value)"></select>
+                                                                        <button type="button" class="ui-button ui-button--compact step-inline-button" :disabled="step.keys.length <= 1" @click="removeStepKey(step.id, keyIndex)">-</button>
+                                                                    </div>
+                                                                </template>
+
+                                                                <div class="key-selection">
+                                                                    <button type="button" class="ui-button ui-button--compact step-inline-button" @click="appendStepKey(step.id)">Add Key</button>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+
+                                                        <template x-if="step.type === 'text'">
+                                                            <div class="flex-column-gap-8">
+                                                                <label>Type Text</label>
+                                                                <input type="text" maxlength="20" :value="step.text || ''" @input="updateSequenceText(step.id, $event.target.value)">
+                                                            </div>
+                                                        </template>
+
+                                                        <template x-if="step.type === 'delay'">
+                                                            <div class="flex-column-gap-8">
+                                                                <label>Delay (ms)</label>
+                                                                <input type="number" min="0" max="5000" step="50" :value="step.delay || 200" @input="updateSequenceDelay(step.id, $event.target.value)">
+                                                            </div>
+                                                        </template>
+
+                                                        <template x-if="step.type === 'release'">
+                                                            <div class="flex-column-gap-8">
+                                                                <label>Release</label>
+                                                                <div class="subtle-text">Release all held keys before continuing.</div>
+                                                            </div>
+                                                        </template>
+                                                </div>
+                                                <div class="step-actions">
+                                                    <button type="button" class="ui-button ui-button--icon" :disabled="idx === 0" @click="moveSequenceStep(step.id, 'up')">Up</button>
+                                                    <button type="button" class="ui-button ui-button--icon" :disabled="idx === macros.selected.steps.length - 1" @click="moveSequenceStep(step.id, 'down')">Dn</button>
+                                                    <button type="button" class="ui-button ui-button--icon ui-button--danger" @click="removeSequenceStep(step.id)">Del</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <div class="macro-preview">
+                                        <template x-if="macros.selected.previewLines.length === 0">
+                                            <p class="preview-text warning">No sequence configured yet. Add steps above to build one.</p>
+                                        </template>
+                                        <template x-for="line in macros.selected.previewLines" :key="line.label">
+                                            <p class="preview-text">
+                                                <strong x-text="`${line.label}:`"></strong>
+                                                <span x-text="` ${line.text}`"></span>
+                                            </p>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <div class="macro-actions">
+                                    <button class="ui-button ui-button--save ui-button--block" :disabled="!macros.selected.canSave" @click="saveSelectedMacro()">Save to Device</button>
+                                    <button class="ui-button ui-button--secondary ui-button--block" :disabled="!macros.selected.hasChanges" @click="resetSelectedMacro()">Reset</button>
+                                </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section id="tabLighting" class="tab-panel" x-show="tabs.active === 'lighting'">
+                    <div class="two-column-layout">
+                        <section class="panel">
+                            <div class="panel-heading">
+                                <h2>Brightness</h2>
+                                <p>Adjust underglow brightness and send the update to the device.</p>
+                            </div>
+                            <div class="slider-row">
+                                <label for="brightnessSlider">Brightness <span x-text="device.brightness"></span></label>
+                                <input type="range" id="brightnessSlider" min="0" max="255" x-model="device.brightness" @input="previewBrightness(device.brightness)">
+                            </div>
+                            <button class="ui-button ui-button--primary ui-button--block lighting-apply-button" type="button" @click="applyBrightness()">Apply Brightness</button>
+                            <div class="lighting-preview">
+                                <div class="lighting-preview-label">
+                                    <span>Live Preview</span>
+                                    <span id="lightingPreviewState">Static Output</span>
+                                </div>
+                                <div id="lightingPreviewBar" class="lighting-preview-bar">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                            <div class="mini-stat-grid">
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-label">Mode</span>
+                                    <strong>Static</strong>
+                                </div>
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-label">Zones</span>
+                                    <strong>6 LEDs</strong>
+                                </div>
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-label">Sync</span>
+                                    <strong>Immediate</strong>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="panel">
+                            <div class="panel-heading">
+                                <h2>Lighting Zones</h2>
+                                <p>Pick a color for each LED zone.</p>
+                            </div>
+                            <div class="led-config">
+                                <template x-for="zone in lighting.zones" :key="zone.index">
+                                    <div class="led-item">
+                                        <h3 x-text="zone.label"></h3>
+                                        <input type="color" :value="zone.color" @input="updateLedColor(zone.index, $event.target.value)">
+                                        <div class="led-item-actions">
+                                            <button class="ui-button ui-button--primary ui-button--block" type="button" @click="applyLedColor(zone.index)">Apply Color</button>
+                                            <button class="ui-button ui-button--block" type="button" @click="applyColorToAll(zone.index)">Apply To All</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="subpanel">
+                                <div class="panel-section-title">Planned Effects</div>
+                                <div class="chip-row">
+                                    <span class="info-chip">Static</span>
+                                    <span class="info-chip">Pulse</span>
+                                    <span class="info-chip">Alert Flash</span>
+                                    <span class="info-chip">Boot Sweep</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section id="tabSecurity" class="tab-panel" x-show="tabs.active === 'security'">
+                    <div class="two-column-layout">
+                        <section class="panel">
+                            <div class="panel-heading">
+                                <h2>Security</h2>
+                                <p>Fingerprint and passkey management will live here as the configurator grows.</p>
+                            </div>
+                            <div class="mini-stat-grid">
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-label">Fingerprint</span>
+                                    <strong>Pending UI</strong>
+                                </div>
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-label">Passkey Slots</span>
+                                    <strong>Unknown</strong>
+                                </div>
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-label">State</span>
+                                    <strong>Firmware Ready</strong>
+                                </div>
+                            </div>
+                            <div class="placeholder-card">
+                                <h3>Fingerprint Management</h3>
+                                <p>The firmware already supports fingerprint and FIDO2 flows, but the current web configurator does not expose enrollment and credential management yet.</p>
+                            </div>
+                        </section>
+
+                        <section class="panel">
+                            <div class="panel-heading">
+                                <h2>Planned Actions</h2>
+                                <p>These panels are placeholders for the next iteration.</p>
+                            </div>
+                            <ul class="feature-list">
+                                <li>Show enrolled fingerprint count</li>
+                                <li>Manage stored passkey slots</li>
+                                <li>Reset credential storage safely</li>
+                                <li>Expose hardware security status</li>
+                            </ul>
+                            <div class="subpanel">
+                                <div class="panel-section-title">Design Direction</div>
+                                <p class="subtle-text">This page will use confirmation panels instead of browser alerts for destructive actions like reset or delete.</p>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section id="tabDevice" class="tab-panel" x-show="tabs.active === 'device'">
+                    <div class="two-column-layout">
+                        <section class="panel" id="sectionOS">
+                            <div class="panel-heading">
+                                <h2>Operating System Profile</h2>
+                                <p>Switch which OS profile the device should use.</p>
+                            </div>
+                            <div class="os-selector">
+                                <button class="ui-button ui-button--profile" :class="{ 'ui-button--active': device.os === 'win' }" type="button" @click="selectOSProfile('win')">Windows</button>
+                                <button class="ui-button ui-button--profile" :class="{ 'ui-button--active': device.os === 'mac' }" type="button" @click="selectOSProfile('mac')">macOS</button>
+                            </div>
+                            <div class="subpanel">
+                                <div class="panel-section-title">Current Behavior</div>
+                                <p class="subtle-text">Header chip reflects the active OS profile, and changes here should save immediately to the device.</p>
+                            </div>
+                        </section>
+
+                        <section class="panel" id="sectionActions">
+                            <div class="panel-heading">
+                                <h2>Device Actions</h2>
+                                <p>Read back settings, reset the device configuration, or export later.</p>
+                            </div>
+                            <div class="stacked-actions">
+                                <button class="ui-button ui-button--block" type="button" @click="refreshDeviceSettings()">List Settings</button>
+                                <button class="ui-button ui-button--block" type="button" @click="resetDeviceDefaults()">Reset to Defaults</button>
+                                <button class="ui-button ui-button--block" type="button" @click="exportDeviceConfig()">Export Configuration</button>
+                                <button class="ui-button ui-button--block" type="button" @click="clearActivityLog()">Clear Log</button>
+                            </div>
+                            <div class="mini-stat-grid">
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-label">Transport</span>
+                                    <strong>Web Serial</strong>
+                                </div>
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-label">Refresh</span>
+                                    <strong>LIST</strong>
+                                </div>
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-label">Reset</span>
+                                    <strong>EEPROM Defaults</strong>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section id="tabLogs" class="tab-panel" x-show="tabs.active === 'logs'">
+                    <section class="panel">
+                        <div class="panel-heading">
+                            <h2>Activity Log</h2>
+                            <p>Serial traffic, device replies, and UI actions appear here.</p>
+                        </div>
+                        <div class="subpanel log-toolbar">
+                            <span class="info-chip">Serial</span>
+                            <span class="info-chip">UI</span>
+                            <span class="info-chip">Errors</span>
+                        </div>
+                        <div id="log" class="log">
+                            <template x-for="(entry, idx) in logs" :key="`${idx}-${entry.text}`">
+                                <div class="log-entry" :class="entry.type" x-text="entry.text"></div>
+                            </template>
+                        </div>
+                    </section>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
